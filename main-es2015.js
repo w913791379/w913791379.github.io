@@ -320,6 +320,17 @@ module.exports = "\n<app-arena></app-arena>\n<!-- <router-outlet></router-outlet
 
 /***/ }),
 
+/***/ "./node_modules/raw-loader/index.js!./src/app/component/role-team/role-team.component.html":
+/*!****************************************************************************************!*\
+  !*** ./node_modules/raw-loader!./src/app/component/role-team/role-team.component.html ***!
+  \****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "<p>{{roleTeam.Name}} 隊伍狀態 {{RTStatus[roleTeam.State]}}</p>\n<div *ngFor=\"let role of roleTeam.teamMenber\" class='role-box'>\n  <app-role [role]=role></app-role>\n</div>\n"
+
+/***/ }),
+
 /***/ "./node_modules/raw-loader/index.js!./src/app/component/role/role.component.html":
 /*!******************************************************************************!*\
   !*** ./node_modules/raw-loader!./src/app/component/role/role.component.html ***!
@@ -349,7 +360,7 @@ module.exports = "\n\n<h1>{{TLightStatus[traflicLight.State]}}</h1>\n<h1>{{trafl
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div *ngFor=\"let role of Arena.teamA\">\n  <app-role [role]=role></app-role>\n</div>\n\n<hr>\n\n<div *ngFor=\"let role of Arena.teamB\">\n  <app-role [role]=role></app-role>\n</div>\n\n<hr>\n<p *ngFor=\"let msg of Arena.eventLog.reverse()\">{{msg}}</p>\n"
+module.exports = "\n<p>場地狀態 {{AStatus[Arena.State]}}</p>\n<hr class='hr-line'>\n\n<app-role-team [roleTeam]=Arena.teamA></app-role-team>\n<hr class='hr-line'>\n\n<app-role-team [roleTeam]=Arena.teamB></app-role-team>\n<hr class='hr-line'>\n\n<p *ngFor=\"let msg of Arena.eventLog.reverse()\">{{msg}}</p>\n"
 
 /***/ }),
 
@@ -443,6 +454,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _component_traffic_light_traffic_light_component__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./component/traffic-light/traffic-light.component */ "./src/app/component/traffic-light/traffic-light.component.ts");
 /* harmony import */ var _component_role_role_component__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./component/role/role.component */ "./src/app/component/role/role.component.ts");
 /* harmony import */ var _page_arena_arena_component__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./page/arena/arena.component */ "./src/app/page/arena/arena.component.ts");
+/* harmony import */ var _component_role_team_role_team_component__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./component/role-team/role-team.component */ "./src/app/component/role-team/role-team.component.ts");
+
 
 
 
@@ -459,7 +472,8 @@ AppModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
             _app_component__WEBPACK_IMPORTED_MODULE_4__["AppComponent"],
             _component_traffic_light_traffic_light_component__WEBPACK_IMPORTED_MODULE_5__["TrafficLightComponent"],
             _component_role_role_component__WEBPACK_IMPORTED_MODULE_6__["RoleComponent"],
-            _page_arena_arena_component__WEBPACK_IMPORTED_MODULE_7__["ArenaComponent"]
+            _page_arena_arena_component__WEBPACK_IMPORTED_MODULE_7__["ArenaComponent"],
+            _component_role_team_role_team_component__WEBPACK_IMPORTED_MODULE_8__["RoleTeamComponent"]
         ],
         imports: [
             _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__["BrowserModule"],
@@ -469,6 +483,202 @@ AppModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_4__["AppComponent"]]
     })
 ], AppModule);
+
+
+
+/***/ }),
+
+/***/ "./src/app/component/role-team/role-team-fsm.ts":
+/*!******************************************************!*\
+  !*** ./src/app/component/role-team/role-team-fsm.ts ***!
+  \******************************************************/
+/*! exports provided: RoleTeamStatus, RoleTeamFSM */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RoleTeamStatus", function() { return RoleTeamStatus; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RoleTeamFSM", function() { return RoleTeamFSM; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
+/* harmony import */ var src_app_share_basic_fsm_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! src/app/share/basic-fsm-object */ "./src/app/share/basic-fsm-object.ts");
+/* harmony import */ var src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! src/app/share/basic-fsm-decorator */ "./src/app/share/basic-fsm-decorator.ts");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
+/* harmony import */ var _role_role_fsm__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../role/role-fsm */ "./src/app/component/role/role-fsm.ts");
+
+
+
+
+
+var RoleTeamStatus;
+(function (RoleTeamStatus) {
+    RoleTeamStatus[RoleTeamStatus["Idle"] = 0] = "Idle";
+    RoleTeamStatus[RoleTeamStatus["Ready"] = 1] = "Ready";
+    RoleTeamStatus[RoleTeamStatus["Work"] = 2] = "Work";
+    RoleTeamStatus[RoleTeamStatus["End"] = 3] = "End";
+})(RoleTeamStatus || (RoleTeamStatus = {}));
+const AllRoleTeamStatus = Object.keys(RoleTeamStatus)
+    .map(key => RoleTeamStatus[key])
+    .filter(value => !isNaN(Number(value)));
+class RoleTeamFSM extends src_app_share_basic_fsm_object__WEBPACK_IMPORTED_MODULE_1__["BasicFSMObject"] {
+    // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
+    // Life Cycle
+    constructor(name) {
+        super();
+        // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
+        // State
+        this.State = RoleTeamStatus.Idle;
+        this.StateChange = new rxjs__WEBPACK_IMPORTED_MODULE_3__["Subject"]();
+        // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
+        // Extended states
+        /** 名稱 */
+        this.Name = '';
+        /** 隊員 */
+        this.teamMenber = [];
+        this.Name = name;
+    }
+    // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
+    // Events
+    check() {
+        return true;
+    }
+    addAction() {
+        for (const role of this.teamMenber) {
+            role.addAction(random(3, 10));
+        }
+    }
+    // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
+    // Guard conditions
+    isAnyoneReady() {
+        return !!this.teamMenber.find(role => role.State === _role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Ready);
+    }
+    isAnyoneWork() {
+        return !!this.teamMenber.find(role => role.State === _role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Work);
+    }
+    isNobodyReady() {
+        return !this.teamMenber.find(role => role.State === _role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Ready);
+    }
+    isNobodyWork() {
+        return !this.teamMenber.find(role => role.State === _role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Work);
+    }
+    isAllDie() {
+        return !this.teamMenber.find(role => role.State !== _role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Die);
+    }
+    // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
+    // 其他
+    getReadyRole() {
+        const roles = this.teamMenber.filter(role => role.State === _role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Ready);
+        return roles[random(0, roles.length)];
+    }
+    getNoDieRole() {
+        const roles = this.teamMenber.filter(role => role.State !== _role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Die);
+        return roles[random(0, roles.length)];
+    }
+}
+RoleTeamFSM.EventDictionary = {}; // 必須有 不然會共用 super
+RoleTeamFSM.GuardDictionary = {}; // 必須有 不然會共用 super
+RoleTeamFSM.ctorParameters = () => [
+    { type: String }
+];
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["State"])(),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Object)
+], RoleTeamFSM.prototype, "State", void 0);
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Event"])(AllRoleTeamStatus),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
+], RoleTeamFSM.prototype, "check", null);
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Event"])(RoleTeamStatus.Idle),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", void 0)
+], RoleTeamFSM.prototype, "addAction", null);
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])(RoleTeamStatus.Idle, RoleTeamStatus.Ready),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
+], RoleTeamFSM.prototype, "isAnyoneReady", null);
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])(RoleTeamStatus.Ready, RoleTeamStatus.Work),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
+], RoleTeamFSM.prototype, "isAnyoneWork", null);
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])(RoleTeamStatus.Ready, RoleTeamStatus.Idle),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
+], RoleTeamFSM.prototype, "isNobodyReady", null);
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])(RoleTeamStatus.Work, RoleTeamStatus.Idle),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
+], RoleTeamFSM.prototype, "isNobodyWork", null);
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])([RoleTeamStatus.Idle, RoleTeamStatus.Ready, RoleTeamStatus.Work], RoleTeamStatus.End),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
+], RoleTeamFSM.prototype, "isAllDie", null);
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+
+
+/***/ }),
+
+/***/ "./src/app/component/role-team/role-team.component.scss":
+/*!**************************************************************!*\
+  !*** ./src/app/component/role-team/role-team.component.scss ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = ".role-box {\n  float: left;\n  padding: 10px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy93OTEzNzkxMzcvZ2l0eC9qcy1mc20vc3JjL2FwcC9jb21wb25lbnQvcm9sZS10ZWFtL3JvbGUtdGVhbS5jb21wb25lbnQuc2NzcyIsInNyYy9hcHAvY29tcG9uZW50L3JvbGUtdGVhbS9yb2xlLXRlYW0uY29tcG9uZW50LnNjc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDRSxXQUFBO0VBQ0EsYUFBQTtBQ0NGIiwiZmlsZSI6InNyYy9hcHAvY29tcG9uZW50L3JvbGUtdGVhbS9yb2xlLXRlYW0uY29tcG9uZW50LnNjc3MiLCJzb3VyY2VzQ29udGVudCI6WyIucm9sZS1ib3gge1xuICBmbG9hdDogbGVmdDtcbiAgcGFkZGluZzogMTBweDtcbn1cbiIsIi5yb2xlLWJveCB7XG4gIGZsb2F0OiBsZWZ0O1xuICBwYWRkaW5nOiAxMHB4O1xufSJdfQ== */"
+
+/***/ }),
+
+/***/ "./src/app/component/role-team/role-team.component.ts":
+/*!************************************************************!*\
+  !*** ./src/app/component/role-team/role-team.component.ts ***!
+  \************************************************************/
+/*! exports provided: RoleTeamComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RoleTeamComponent", function() { return RoleTeamComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm2015/core.js");
+/* harmony import */ var _role_team_fsm__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./role-team-fsm */ "./src/app/component/role-team/role-team-fsm.ts");
+
+
+
+let RoleTeamComponent = class RoleTeamComponent {
+    // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
+    constructor() {
+        this.RTStatus = _role_team_fsm__WEBPACK_IMPORTED_MODULE_2__["RoleTeamStatus"];
+    }
+    ngOnInit() {
+    }
+};
+tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", _role_team_fsm__WEBPACK_IMPORTED_MODULE_2__["RoleTeamFSM"])
+], RoleTeamComponent.prototype, "roleTeam", void 0);
+RoleTeamComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
+        selector: 'app-role-team',
+        template: __webpack_require__(/*! raw-loader!./role-team.component.html */ "./node_modules/raw-loader/index.js!./src/app/component/role-team/role-team.component.html"),
+        styles: [__webpack_require__(/*! ./role-team.component.scss */ "./src/app/component/role-team/role-team.component.scss")]
+    }),
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [])
+], RoleTeamComponent);
 
 
 
@@ -595,7 +805,7 @@ tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
 ], RoleFSM.prototype, "isActionPointFull", null);
 tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
-    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])(RoleStatus.Idle, RoleStatus.Die),
+    Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])([RoleStatus.Idle, RoleStatus.Ready, RoleStatus.Work], RoleStatus.Die),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
@@ -891,9 +1101,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var src_app_share_basic_fsm_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! src/app/share/basic-fsm-object */ "./src/app/share/basic-fsm-object.ts");
 /* harmony import */ var src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! src/app/share/basic-fsm-decorator */ "./src/app/share/basic-fsm-decorator.ts");
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
-/* harmony import */ var src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! src/app/component/role/role-fsm */ "./src/app/component/role/role-fsm.ts");
-/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
-/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(moment__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(moment__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../component/role-team/role-team-fsm */ "./src/app/component/role-team/role-team-fsm.ts");
 
 
 
@@ -922,48 +1132,60 @@ class ArenaFSM extends src_app_share_basic_fsm_object__WEBPACK_IMPORTED_MODULE_1
         // Extended states
         /** 名稱 */
         this.Name = '';
-        /** A隊 */
-        this.teamA = [];
-        /** B隊 */
-        this.teamB = [];
         this.eventLog = [];
         this.Name = name;
     }
-    get allRole() {
-        return this.teamA.concat(this.teamB);
+    get allTeam() {
+        return [this.teamA, this.teamB];
     }
     // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
     // Events
     check() {
+        for (const roleTeam of this.allTeam) {
+            roleTeam.check();
+        }
         switch (this.State) {
             case ArenaStatus.Idle:
-                for (const role of this.allRole) {
-                    role.addAction(random(3, 10));
+                for (const roleTeam of this.allTeam) {
+                    roleTeam.addAction();
                 }
                 break;
             case ArenaStatus.Work:
-                for (const role of this.allRole) {
-                    if (role.State === src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Ready) {
-                        // 找到對手
+                const workTeam = this.allTeam.find(team => team.State === _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__["RoleTeamStatus"].Work);
+                if (workTeam) {
+                    return false;
+                }
+                for (const roleTeam of this.allTeam) {
+                    if (roleTeam.State === _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__["RoleTeamStatus"].Ready) {
+                        // 攻擊方
+                        const AttackRole = roleTeam.getReadyRole();
+                        if (!AttackRole) {
+                            return false;
+                        }
+                        // 受攻擊方
                         let UnderAttackRole;
-                        if (this.teamA.includes(role)) {
-                            UnderAttackRole = this.teamB[0];
+                        if (roleTeam === this.teamA) {
+                            UnderAttackRole = this.teamB.getNoDieRole();
                         }
                         else {
-                            UnderAttackRole = this.teamA[0];
+                            UnderAttackRole = this.teamA.getNoDieRole();
                         }
                         if (!UnderAttackRole) {
                             return false;
                         }
                         const cost = random(30, 50);
                         const damage = random(10, 20);
-                        role.startWork(cost);
-                        this.addEventLog(`${role.Name} 準備攻擊`);
+                        AttackRole.startWork(cost);
+                        this.addEventLog(`${AttackRole.Name} 準備攻擊`);
                         setTimeout(() => {
                             UnderAttackRole.getDamage(damage);
-                            role.endWork();
-                            this.addEventLog(`${role.Name} 攻擊 ${UnderAttackRole.Name} 造成 ${damage} 傷害`);
-                        }, 1000);
+                            AttackRole.endWork();
+                            this.addEventLog(`${AttackRole.Name} 攻擊 ${UnderAttackRole.Name} 造成 ${damage} 傷害`);
+                            if (UnderAttackRole.HealthPoint <= 0) {
+                                this.addEventLog(`${UnderAttackRole.Name} 屎掉了`);
+                            }
+                        }, 700);
+                        break;
                     }
                 }
                 break;
@@ -972,26 +1194,27 @@ class ArenaFSM extends src_app_share_basic_fsm_object__WEBPACK_IMPORTED_MODULE_1
     }
     // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
     // Guard conditions
-    isAnyoneReady() {
-        for (const role of this.allRole) {
-            if (role.State === src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Ready) {
+    isAnyTeamWork() {
+        for (const roleTeam of this.allTeam) {
+            if (roleTeam.State === _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__["RoleTeamStatus"].Ready ||
+                roleTeam.State === _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__["RoleTeamStatus"].Work) {
                 return true;
             }
         }
         return false;
     }
-    isAllIdle() {
-        for (const role of this.allRole) {
-            if (role.State !== src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Idle) {
+    isAllTeamIdle() {
+        for (const roleTeam of this.allTeam) {
+            if (roleTeam.State !== _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__["RoleTeamStatus"].Idle) {
                 return false;
             }
         }
         return true;
     }
-    isAnyoneDie() {
-        for (const role of this.allRole) {
-            if (role.State === src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_4__["RoleStatus"].Die) {
-                this.addEventLog(`${role.Name} 屎掉了`);
+    isAnyTeamEnd() {
+        for (const roleTeam of this.allTeam) {
+            if (roleTeam.State === _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__["RoleTeamStatus"].End) {
+                this.addEventLog(`${roleTeam.Name} 全滅了`);
                 return true;
             }
         }
@@ -1026,21 +1249,21 @@ tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
-], ArenaFSM.prototype, "isAnyoneReady", null);
+], ArenaFSM.prototype, "isAnyTeamWork", null);
 tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
     Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])(ArenaStatus.Work, ArenaStatus.Idle),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
-], ArenaFSM.prototype, "isAllIdle", null);
+], ArenaFSM.prototype, "isAllTeamIdle", null);
 tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
     Object(src_app_share_basic_fsm_decorator__WEBPACK_IMPORTED_MODULE_2__["Guard"])([ArenaStatus.Idle, ArenaStatus.Work], ArenaStatus.End),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", Function),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", []),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:returntype", Boolean)
-], ArenaFSM.prototype, "isAnyoneDie", null);
+], ArenaFSM.prototype, "isAnyTeamEnd", null);
 function current(date = new Date()) {
-    return moment__WEBPACK_IMPORTED_MODULE_5__(date).local().format('HH:mm:ss');
+    return moment__WEBPACK_IMPORTED_MODULE_4__(date).local().format('HH:mm:ss');
 }
 function random(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
@@ -1056,7 +1279,7 @@ function random(min, max) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL3BhZ2UvYXJlbmEvYXJlbmEuY29tcG9uZW50LnNjc3MifQ== */"
+module.exports = ".hr-line {\n  margin-left: auto;\n  margin-right: auto;\n  width: 100%;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy93OTEzNzkxMzcvZ2l0eC9qcy1mc20vc3JjL2FwcC9wYWdlL2FyZW5hL2FyZW5hLmNvbXBvbmVudC5zY3NzIiwic3JjL2FwcC9wYWdlL2FyZW5hL2FyZW5hLmNvbXBvbmVudC5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUVBO0VBQ0UsaUJBQUE7RUFDQSxrQkFBQTtFQUNBLFdBQUE7QUNERiIsImZpbGUiOiJzcmMvYXBwL3BhZ2UvYXJlbmEvYXJlbmEuY29tcG9uZW50LnNjc3MiLCJzb3VyY2VzQ29udGVudCI6WyJcblxuLmhyLWxpbmUge1xuICBtYXJnaW4tbGVmdDogYXV0bztcbiAgbWFyZ2luLXJpZ2h0OiBhdXRvO1xuICB3aWR0aDogMTAwJTtcbn1cbiIsIi5oci1saW5lIHtcbiAgbWFyZ2luLWxlZnQ6IGF1dG87XG4gIG1hcmdpbi1yaWdodDogYXV0bztcbiAgd2lkdGg6IDEwMCU7XG59Il19 */"
 
 /***/ }),
 
@@ -1075,6 +1298,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! src/app/component/role/role-fsm */ "./src/app/component/role/role-fsm.ts");
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
 /* harmony import */ var _arena_fsm__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./arena-fsm */ "./src/app/page/arena/arena-fsm.ts");
+/* harmony import */ var _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../component/role-team/role-team-fsm */ "./src/app/component/role-team/role-team-fsm.ts");
+
 
 
 
@@ -1083,9 +1308,15 @@ __webpack_require__.r(__webpack_exports__);
 let ArenaComponent = class ArenaComponent {
     // ====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====.====
     constructor() {
+        this.AStatus = _arena_fsm__WEBPACK_IMPORTED_MODULE_4__["ArenaStatus"];
         this.Arena = new _arena_fsm__WEBPACK_IMPORTED_MODULE_4__["ArenaFSM"]('競技場');
-        this.Arena.teamA.push(new src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_2__["RoleFSM"]('小明'));
-        this.Arena.teamB.push(new src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_2__["RoleFSM"]('小華'));
+        const idxArr = Array(3).fill(1).map((_, i) => i + 1);
+        const teamA = new _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__["RoleTeamFSM"]('A');
+        teamA.teamMenber = idxArr.map(idx => new src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_2__["RoleFSM"](`小明${idx}`));
+        this.Arena.teamA = teamA;
+        const teamB = new _component_role_team_role_team_fsm__WEBPACK_IMPORTED_MODULE_5__["RoleTeamFSM"]('B');
+        teamB.teamMenber = idxArr.map(idx => new src_app_component_role_role_fsm__WEBPACK_IMPORTED_MODULE_2__["RoleFSM"](`小華${idx}`));
+        this.Arena.teamB = teamB;
     }
     ngOnInit() {
         const timer = Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["interval"])(100)
